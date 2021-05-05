@@ -60,7 +60,7 @@ functions:
               paths:
                 id: true
       - http:
-          path: v1/backlog/{id}/add
+          path: v1/backlog/{id}/update
           method: put
           request:
             parameter:

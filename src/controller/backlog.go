@@ -101,8 +101,8 @@ func (bc BacklogController) Show(c *gin.Context) {
 	return
 }
 
-func (bc BacklogController) Add(c *gin.Context) {
-	log.Printf("backlog/Add called")
+func (bc BacklogController) Update(c *gin.Context) {
+	log.Printf("backlog/Update called")
 	res := new(response.Response)
 
 	var req backlog.Backlog

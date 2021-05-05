@@ -22,7 +22,7 @@ func GetRouter() *gin.Engine { // *gin.Engineの表記は返り値の型
 			// 詳細
 			backlog.GET("/:id", ctrl.Show)
 			// 更新
-			backlog.PUT("/:id/add", ctrl.Add)
+			backlog.PUT("/:id/update", ctrl.Update)
 			backlog.PUT("/:id/remove", ctrl.Remove)
 			// データ削除
 			backlog.DELETE("/:id", ctrl.Delete)
