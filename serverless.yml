@@ -1,0 +1,109 @@
+service: BacklogTools
+
+# 使用するクラウドサービスと言語の指定
+provider:
+  name: aws
+  apiGateway:
+    shouldStartNameWithService: true
+  environment:
+    TZ: "Asia/Tokyo"
+    BACKLOG_BASE_URL: "https://xxxxxxxx.backlog.jp/"
+    ENV: "AWS"
+  memorySize: 128
+  runtime: go1.x
+  stage: ${opt:stage, self:custom.defaultStage}
+  region: ap-northeast-1
+  logRetentionInDays: 14
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "logs:*"
+        - dynamodb:*
+      Resource: "*"
+  resourcePolicy:
+    - Effect: Allow
+      Principal: "*"
+      Action: execute-api:Invoke
+      Resource:
+        - execute-api:/*/*/*
+      Condition:
+      # ユーザ情報を編集許可するIPと
+      # BacklogのWebhook送信サーバのIPを通す https://support-ja.backlog.com/hc/ja/articles/360035645534
+        IpAddress:
+          aws:SourceIp:
+            - xxx.xxx.xxx.xxx
+
+
+package:
+  exclude:
+    - ./**
+  include:
+    - ./bin/**
+
+custom:
+  defaultStage: dev
+
+# Lambdaを構築
+functions:
+  api:
+    handler: bin/main
+    timeout: 60
+    events:
+      - http:
+          path: v1/backlog
+          method: get
+      - http:
+          path: v1/backlog/{id}
+          method: get
+          request:
+            parameter:
+              paths:
+                id: true
+      - http:
+          path: v1/backlog/{id}/add
+          method: put
+          request:
+            parameter:
+              paths:
+                id: true
+      - http:
+          path: v1/backlog/{id}/remove
+          method: put
+          request:
+            parameter:
+              paths:
+                id: true
+      - http:
+          path: v1/backlog/{id}
+          method: delete
+          request:
+            parameter:
+              paths:
+                id: true
+      - http:
+          path: v1/backlog
+          method: post
+      - http:
+          path: v1/notice/do
+          method: post
+# リソースの構築
+resources:
+  Resources:
+    # DynamoDBの構築
+    DynamoDbTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        # テーブル名の指定
+        TableName: BacklogTools
+        # キーの型を指定
+        AttributeDefinitions:
+          - AttributeName: ID
+            AttributeType: S
+        # キーの種類を指定
+        KeySchema:
+          - AttributeName: ID
+            KeyType: HASH
+        # プロビジョニングするキャパシティーユニットの設定
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
