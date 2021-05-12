@@ -61,14 +61,14 @@ functions:
                 id: true
       - http:
           path: v1/backlog/{id}/update
-          method: put
+          method: patch
           request:
             parameter:
               paths:
                 id: true
       - http:
           path: v1/backlog/{id}/remove
-          method: put
+          method: patch
           request:
             parameter:
               paths:

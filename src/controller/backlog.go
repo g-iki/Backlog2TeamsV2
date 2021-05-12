@@ -22,10 +22,10 @@ func (bc BacklogController) Index(c *gin.Context) {
 
 	b := new(backlog.Backlog)
 	list := b.ReadAll()
-	con := make([]backlog.Connections, 0)
-	for i := 0; i < len(list); i++ {
-		list[i].SetConnections(con)
-	}
+	// con := make([]backlog.Connections, 0)
+	// for i := 0; i < len(list); i++ {
+	// 	list[i].SetConnections(con)
+	// }
 	res.SetData(list)
 	res.SetMessage("Success")
 
@@ -82,6 +82,12 @@ func (bc BacklogController) Show(c *gin.Context) {
 
 	id := c.Params.ByName("id")
 
+	if id == "" {
+		res.SetMessage("ID cannot be null")
+		c.String(http.StatusBadRequest, utils.JsonToString(res))
+		return
+	}
+
 	var req backlog.Backlog
 	c.BindJSON(&req)
 
@@ -109,6 +115,12 @@ func (bc BacklogController) Update(c *gin.Context) {
 	c.BindJSON(&req)
 	id := c.Params.ByName("id")
 
+	if id == "" {
+		res.SetMessage("ID cannot be null")
+		c.String(http.StatusBadRequest, utils.JsonToString(res))
+		return
+	}
+
 	b := new(backlog.Backlog)
 	reged, err := b.GetItem(id)
 
@@ -134,7 +146,9 @@ func (bc BacklogController) Update(c *gin.Context) {
 			reged.AddConnections(*con)
 		}
 	}
-
+	if req.GetOwner() != "" {
+		reged.SetOwner(req.GetOwner())
+	}
 	reged.SetUpdateDate(time.Now())
 	updated, err := reged.Update(id)
 	if err != nil {
@@ -143,7 +157,7 @@ func (bc BacklogController) Update(c *gin.Context) {
 		return
 	}
 	res.SetData(updated)
-	res.SetMessage("Success, record Update")
+	res.SetMessage("Success, record Update(Connection Update)")
 	c.String(http.StatusOK, utils.JsonToString(res))
 
 	return
@@ -156,6 +170,12 @@ func (bc BacklogController) Remove(c *gin.Context) {
 	var req backlog.Backlog
 	c.BindJSON(&req)
 	id := c.Params.ByName("id")
+
+	if id == "" {
+		res.SetMessage("ID cannot be null")
+		c.String(http.StatusBadRequest, utils.JsonToString(res))
+		return
+	}
 
 	b := new(backlog.Backlog)
 	upd := new(backlog.Backlog)
@@ -196,7 +216,8 @@ func (bc BacklogController) Remove(c *gin.Context) {
 	}
 
 	res.SetData(updated)
-	res.SetMessage("Success, record Update")
+	res.SetMessage("Success, record Update(Connection Remove)")
+	c.String(http.StatusOK, utils.JsonToString(res))
 
 	return
 }

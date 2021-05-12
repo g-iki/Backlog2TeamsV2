@@ -61,7 +61,6 @@ func (nc NoticeController) DoNotice(c *gin.Context) {
 
 	if 1 <= req.Type && req.Type <= 4 {
 		// 課題更新系
-
 		issueKey := req.Project.Projectkey + "-" + strconv.Itoa(req.Content.KeyID)
 		fact = new(teamsMessage.Facts)
 		fact.Name = "課題キー"
@@ -104,15 +103,24 @@ func (nc NoticeController) DoNotice(c *gin.Context) {
 				for i, v := range req.Content.Changes {
 					fact = new(teamsMessage.Facts)
 					fact.Name = "変更点" + strconv.Itoa(i+1)
-					fact.Value = "(" + v.Field + ") " + v.OldValue + "→" + v.NewValue
+					var oldValue, newValue string
+					if v.Field == "status" {
+						oldValue = getStatusValue(v.OldValue)
+						newValue = getStatusValue(v.NewValue)
+					} else {
+						oldValue = v.OldValue
+						newValue = v.NewValue
+					}
+
+					fact.Value = "(" + v.Field + ") " + oldValue + "→" + newValue
 					sec.Facts = append(sec.Facts, *fact)
 				}
 			}
 
-			if req.Content.Content != "" {
+			if req.Content.Comment.Content != "" {
 				fact = new(teamsMessage.Facts)
 				fact.Name = "コメント"
-				fact.Value = req.Content.Content
+				fact.Value = req.Content.Comment.Content
 				sec.Facts = append(sec.Facts, *fact)
 			}
 
@@ -343,4 +351,19 @@ func teamsPostSimpleMsg(url string, msg *teamsMessage.TeamsMessage) {
 	}
 	fmt.Printf("%#v", string(byteArray))
 
+}
+
+func getStatusValue(code string) string {
+
+	if code == "1" {
+		return "未対応"
+	} else if code == "2" {
+		return "処理中"
+	} else if code == "3" {
+		return "処理済み"
+	} else if code == "4" {
+		return "完了"
+	} else {
+		return "[カスタム状態]"
+	}
 }
