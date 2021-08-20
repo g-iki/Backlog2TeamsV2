@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -88,6 +89,7 @@ func (nc NoticeController) DoNotice(c *gin.Context) {
 			fact = new(teamsMessage.Facts)
 			fact.Name = "内容"
 			fact.Value = req.Content.Description
+			fact.Value = strings.Replace(fact.Value, "\n", "<br />", -1)
 			sec.Facts = append(sec.Facts, *fact)
 
 			tar.URI = baseURL + "view/" + issueKey
@@ -121,6 +123,7 @@ func (nc NoticeController) DoNotice(c *gin.Context) {
 				fact = new(teamsMessage.Facts)
 				fact.Name = "コメント"
 				fact.Value = req.Content.Comment.Content
+				fact.Value = strings.Replace(fact.Value, "\n", "<br />", -1)
 				sec.Facts = append(sec.Facts, *fact)
 			}
 
@@ -135,7 +138,13 @@ func (nc NoticeController) DoNotice(c *gin.Context) {
 
 			fact = new(teamsMessage.Facts)
 			fact.Name = "コメント"
-			fact.Value = req.Content.Comment.Content
+			if req.Content.Comment.Content != "" {
+				fact.Value = req.Content.Comment.Content
+				fact.Value = strings.Replace(fact.Value, "\n", "<br />", -1)
+			} else {
+				fact.Value = "[コメントの取得に失敗しました]"
+			}
+
 			sec.Facts = append(sec.Facts, *fact)
 
 			tar.URI = baseURL + "view/" + issueKey +
@@ -156,6 +165,7 @@ func (nc NoticeController) DoNotice(c *gin.Context) {
 			fact = new(teamsMessage.Facts)
 			fact.Name = "内容"
 			fact.Value = req.Content.Content
+			fact.Value = strings.Replace(fact.Value, "\n", "<br />", -1)
 			sec.Facts = append(sec.Facts, *fact)
 			tar.URI = baseURL + "alias/wili/" + strconv.Itoa(req.Content.ID)
 		} else if req.Type == 6 {
@@ -164,6 +174,7 @@ func (nc NoticeController) DoNotice(c *gin.Context) {
 			fact = new(teamsMessage.Facts)
 			fact.Name = "内容"
 			fact.Value = req.Content.Content
+			fact.Value = strings.Replace(fact.Value, "\n", "<br />", -1)
 			sec.Facts = append(sec.Facts, *fact)
 
 			tar.URI = baseURL + "alias/wili/" + strconv.Itoa(req.Content.ID)
